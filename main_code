@@ -1,0 +1,94 @@
+### Will make the card game as described with the winner being the player with the most points 
+### after a certain amount of turns
+## turns will be inputed by the players that way they can decide how long they want to play
+### I will also add a feature where if a player gets the info correct with capitalization they get an aditional point
+### i think this will make it more interesting because if someone forgets to capitalize they wont get the extra point
+import random
+import time 
+
+class CardMemoryGame:
+    def __init__(self, num_players):
+        self.num_players = num_players
+        self.players = {}
+        for i in range(num_players):
+            self.players[f"Player {i+1}"] = 0
+        self.deck = [(self.get_rank_name(rank), suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']]
+        random.shuffle(self.deck)
+
+    def play_turn(self, player):
+        # Deal 5 cards
+        dealt_cards = self.deck[:5]
+        self.deck = self.deck[5:]
+
+        # Display cards
+        for card in dealt_cards:
+            print(card)
+            time.sleep(1.5)  ###card shown every 1.5 seconds
+
+        # randomly chose to test for Suits or ranks 
+        recall_choice = random.choice(['Suits', 'Ranks'])
+        print(f"\nYou need to recall {recall_choice}") ## output tells player what to recall
+
+        # input tells player to input info
+        recalled_info = input("Enter the recalled information: ").strip().split()
+
+       ### calculate score by comparing input to what was dealt
+        if recall_choice == 'Suits':
+            correct_info = [card[1] for card in dealt_cards]
+        else:
+            correct_info = [card[0] for card in dealt_cards]
+
+        # Make both dealt info and input into lowercase so capitializationd doesnt matter
+        recalled_info_low_case = [info.lower() for info in recalled_info]
+        correct_info_low_case = [info.lower() for info in correct_info]
+
+        score = 0
+        if set(recalled_info_low_case) == set(correct_info_low_case):
+            score += 1  # 1 point if info is correct regardless of capitalization
+            if recalled_info == correct_info:
+                ### extra part of game to make it more interesting
+                score += 1  #### additional 1 point if it is capitalized correctly.
+
+        self.players[player] += score
+
+    def get_rank_name(self, rank):
+        if rank == 11:
+            return 'Jack'
+        elif rank == 12:
+            return 'Queen'
+        elif rank == 13:
+            return 'King'
+        elif rank == 14:
+            return 'Ace'
+        else:
+            return str(rank)
+### show scores for each player after turn
+    def display_scores(self):
+        for player, score in self.players.items():
+            print(f"{player}: {score} points")
+### detirmine and say who is the winner
+    def determine_winner(self):
+        score_max = max(self.players.values())
+        winners = [player for player, score in self.players.items() if score == score_max]
+        if len(winners) == 1:
+            return f"The winner is {winners[0]} with {score_max} points!"
+        else:
+            return f"We have a tie between {', '.join(winners)} with {score_max} points each!"
+
+   
+   ## how to know when game ends based on turns and print "game over" when it does
+    def play_game(self, num_turns):
+        for _ in range(num_turns):
+            for player in self.players:
+                print(f"\n{player}'s turn:")
+                self.play_turn(player)
+                self.display_scores()
+                print("")
+        print("\nGame Over!")
+        print(self.determine_winner())
+
+if __name__ == "__main__":
+    num_players = int(input("Enter the number of players: "))
+    num_turns = int(input("Enter the number of turns: "))
+    game = CardMemoryGame(num_players)
+    game.play_game(num_turns)
